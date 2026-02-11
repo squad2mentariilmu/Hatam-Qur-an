@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 
 const USER_API_KEY_STORAGE = 'hafizai_user_api_key';
+// Default fallback key if no Env var or User key is present
+const DEFAULT_API_KEY = "AIzaSyDyFoJXEJnqHI_vZhdqT9k2LK9-8Z5Ktt8";
 
 export const getUserApiKey = () => {
   try {
@@ -18,28 +20,55 @@ export const saveUserApiKey = (key: string) => {
   }
 };
 
+// Helper to safely access env vars without triggering strict bundler replacements
+const getSafeEnvApiKey = () => {
+  try {
+    // Check global scope first (from index.html polyfill)
+    // @ts-ignore
+    if (typeof window !== 'undefined' && window.process && window.process.env && window.process.env.API_KEY) {
+       // @ts-ignore
+       return window.process.env.API_KEY;
+    }
+    
+    // Check standard process.env (for Node/Build environments)
+    // @ts-ignore
+    if (typeof process !== 'undefined' && process.env) {
+      // @ts-ignore
+      return process.env.API_KEY;
+    }
+  } catch (e) {
+    return undefined;
+  }
+  return undefined;
+};
+
 const getClient = () => {
-  // 1. Prioritize User API Key
+  // 1. Prioritize User API Key (from Settings)
   let apiKey = getUserApiKey();
 
-  // 2. Fallback to Default Env Key (Safe Access)
+  // 2. Fallback to Environment Variable (Netlify/System)
   if (!apiKey) {
-    try {
-      // @ts-ignore
-      if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-        // @ts-ignore
-        apiKey = process.env.API_KEY;
-      }
-    } catch (e) {
-      // Ignore reference error if process is not defined
-    }
+    const envKey = getSafeEnvApiKey();
+    if (envKey) apiKey = envKey;
+  }
+
+  // 3. Final Fallback to Default Hardcoded Key
+  if (!apiKey) {
+    apiKey = DEFAULT_API_KEY;
   }
 
   if (!apiKey) {
     console.warn("API Key not found. Please add it in settings or environment.");
+    // Return null instead of crashing, UI handles the error message
     return null;
   }
-  return new GoogleGenAI({ apiKey });
+  
+  try {
+    return new GoogleGenAI({ apiKey });
+  } catch (error) {
+    console.error("Failed to initialize GoogleGenAI client:", error);
+    return null;
+  }
 };
 
 export const getTadabbur = async (surahName: string, ayahNumber: number, arabic: string, translation: string) => {

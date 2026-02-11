@@ -27,8 +27,9 @@
       }
     </style>
     <script>
-      // Polyfill for process.env to prevent crashes in browser environments (e.g. Netlify)
-      if (typeof process === 'undefined') {
+      // CRITICAL: Polyfill for Node.js globals to prevent crashes in browser/Netlify
+      window.global = window;
+      if (typeof window.process === 'undefined') {
         window.process = { env: {} };
       }
     </script>

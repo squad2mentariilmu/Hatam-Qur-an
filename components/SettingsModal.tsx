@@ -47,14 +47,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Gemini API Key (Opsional)
             </label>
+            
+            <div className="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-800">
+              <p className="font-bold mb-1">Cara mendapatkan kunci:</p>
+              <ol className="list-decimal list-inside space-y-0.5 ml-1">
+                <li>Buka <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600">Google AI Studio</a></li>
+                <li>Login dan klik "Create API Key"</li>
+                <li>Salin kode dan tempel di bawah ini</li>
+              </ol>
+            </div>
+
             <p className="text-xs text-gray-500 mb-2">
-              Masukkan API Key Anda sendiri jika fitur Tadabbur AI tidak berjalan atau limit habis.
+              Gunakan kunci sendiri jika Tadabbur AI tidak merespons (limit default habis).
             </p>
             <input 
               type="password" 
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Masukkan API Key..."
+              placeholder="Tempel API Key di sini..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
