@@ -26,6 +26,12 @@
         scrollbar-width: none;
       }
     </style>
+    <script>
+      // Polyfill for process.env to prevent crashes in browser environments (e.g. Netlify)
+      if (typeof process === 'undefined') {
+        window.process = { env: {} };
+      }
+    </script>
   <script type="importmap">
 {
   "imports": {

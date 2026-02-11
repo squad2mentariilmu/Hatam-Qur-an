@@ -1,9 +1,42 @@
 import { GoogleGenAI } from "@google/genai";
 
+const USER_API_KEY_STORAGE = 'hafizai_user_api_key';
+
+export const getUserApiKey = () => {
+  try {
+    return localStorage.getItem(USER_API_KEY_STORAGE) || '';
+  } catch {
+    return '';
+  }
+};
+
+export const saveUserApiKey = (key: string) => {
+  try {
+    localStorage.setItem(USER_API_KEY_STORAGE, key);
+  } catch (e) {
+    console.error("Failed to save API Key", e);
+  }
+};
+
 const getClient = () => {
-  const apiKey = process.env.API_KEY;
+  // 1. Prioritize User API Key
+  let apiKey = getUserApiKey();
+
+  // 2. Fallback to Default Env Key (Safe Access)
   if (!apiKey) {
-    console.warn("API Key not found in environment variables");
+    try {
+      // @ts-ignore
+      if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+        // @ts-ignore
+        apiKey = process.env.API_KEY;
+      }
+    } catch (e) {
+      // Ignore reference error if process is not defined
+    }
+  }
+
+  if (!apiKey) {
+    console.warn("API Key not found. Please add it in settings or environment.");
     return null;
   }
   return new GoogleGenAI({ apiKey });
@@ -11,7 +44,7 @@ const getClient = () => {
 
 export const getTadabbur = async (surahName: string, ayahNumber: number, arabic: string, translation: string) => {
   const client = getClient();
-  if (!client) return "API Key is missing. Cannot generate insight.";
+  if (!client) return "Kunci API tidak ditemukan. Silakan masukkan Gemini API Key Anda di menu Pengaturan (ikon gerigi).";
 
   try {
     const prompt = `
@@ -31,6 +64,6 @@ export const getTadabbur = async (surahName: string, ayahNumber: number, arabic:
     return response.text || "Maaf, tidak dapat memuat tadabbur saat ini.";
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Terjadi kesalahan saat menghubungi AI.";
+    return "Terjadi kesalahan saat menghubungi AI. Periksa koneksi atau API Key Anda.";
   }
 };
